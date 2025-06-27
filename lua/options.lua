@@ -486,13 +486,33 @@ function M.register_callback(name, func)
 end
 
 function M.set_modeline(bufnr)
+    local max_lines = vim.api.nvim_get_option("modelines")
+
     local last_linenr = fn.line("$")
     if last_linenr == 1 then
         return
     end
 
-    local last_line = vim.api.nvim_buf_get_lines(bufnr, last_linenr - 1, last_linenr, true)[1]
+    if last_linenr < 2*max_lines then
+        -- first and last `max_lines` lines overlap, scan the whole buffer
+        for i = 1, last_linenr, 1 do
+            local line = vim.api.nvim_buf_get_lines(bufnr, i-1, i, true)[1]
+            M.set_modeline_from_string(bufnr, line)
+        end
+        return
+    end
 
+    for i = 1, max_lines, 1 do
+        local line = vim.api.nvim_buf_get_lines(bufnr, i-1, i, true)[1]
+        M.set_modeline_from_string(bufnr, line)
+    end
+    for i = last_linenr-max_lines, last_linenr, 1 do
+        local line = vim.api.nvim_buf_get_lines(bufnr, i-1, i, true)[1]
+        M.set_modeline_from_string(bufnr, line)
+    end
+end
+
+function M.set_modeline_from_string(bufnr, last_line)
     if string.match(last_line, "nvim%-options:") == nil then
         return
     end
