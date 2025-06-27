@@ -512,18 +512,18 @@ function M.set_modeline(bufnr)
     end
 end
 
-function M.set_modeline_from_string(bufnr, last_line)
-    if string.match(last_line, "nvim%-options:") == nil then
+function M.set_modeline_from_string(bufnr, line)
+    if string.match(line, "nvim%-options:") == nil then
         return
     end
 
-    local start_index = string.find(last_line, "Setlocal")
+    local start_index = string.find(line, "Setlocal")
     if start_index == nil then
         log.error("options", "Only Setlocal is supported.")
         return
     end
 
-    local modeline = string.sub(last_line, start_index, #last_line)
+    local modeline = string.sub(line, start_index, #line)
     modeline = string.split(string.gsub(modeline, "Setlocal ", ""), " ")
     for _, opt in ipairs(modeline) do
         M.run_set_cmd(opt, bufnr)
